@@ -16,4 +16,5 @@
 //= require vendor/at/jquery.caret.js
 //= require vendor/at/jquery.atwho.js
 //= require vendor/backbone.keys/backbone.keys.js
+//= require vendor/mathquill/mathquill.min.js
 //= require common.js

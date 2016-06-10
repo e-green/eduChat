@@ -25,8 +25,8 @@ RUN  apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=fals
 ADD $TAR_GZ_URL ./master.tar.gz
 
 RUN tar -xzvf master.tar.gz \
-&&  cp -a lets-chat-master/. . \
-&&  rm -rf lets-chat-master
+&&  cp -a eduChat-master/. . \
+&&  rm -rf eduChat-master
 
 RUN groupadd -r node \
 &&  useradd -r -g node node \
