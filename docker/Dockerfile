@@ -1,26 +1,26 @@
 FROM node:0.12-slim
 MAINTAINER SD Elements
 
-ENV PKG_JSON_URL=https://raw.githubusercontent.com/e-green/eduChat/master/package.json \
-    TAR_GZ_URL=https://github.com/e-green/eduChat/archive/master.tar.gz \
-    BUILD_DEPS='g++ gcc git make python' \
-    LCB_PLUGINS='lets-chat-ldap lets-chat-s3'
+ENV PKG_JSON_URL=https://raw.githubusercontent.com/e-green/eduChat/master/package.json
+ENV TAR_GZ_URL=https://github.com/e-green/eduChat/archive/master.tar.gz
+ENV BUILD_DEPS='g++ gcc git make python'
+ENV LCB_PLUGINS='lets-chat-ldap lets-chat-s3'
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 ADD $PKG_JSON_URL ./package.json
 
-RUN set -x \
-&&  apt-get update \
-&&  apt-get install -y $BUILD_DEPS --no-install-recommends \
-&&  rm -rf /var/lib/apt/lists/* \
-&&  npm install --production \
-&&  npm install $LCB_PLUGINS \
-&&  npm dedupe \
-&&  npm cache clean \
-&&  rm -rf /tmp/npm* \
-&&  apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false -o APT::AutoRemove::SuggestsImportant=false $BUILD_DEPS
+RUN set -x
+RUN  apt-get update
+RUN  apt-get install -y $BUILD_DEPS --no-install-recommends
+RUN  rm -rf /var/lib/apt/lists/*
+RUN  npm install --production
+RUN  npm install $LCB_PLUGINS
+RUN  npm dedupe
+RUN  npm cache clean
+RUN  rm -rf /tmp/npm*
+RUN  apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false -o APT::AutoRemove::SuggestsImportant=false $BUILD_DEPS
 
 ADD $TAR_GZ_URL ./master.tar.gz
 

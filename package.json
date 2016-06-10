@@ -1,6 +1,6 @@
 {
     "name": "edu-chat",
-    "version": "0.5",
+    "version": "0.4.7",
     "description": "A chat app for educational purposes.",
     "license": "MIT",
     "main": "app.js",
