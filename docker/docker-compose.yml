@@ -4,12 +4,10 @@
 # Usage: docker-compose up
 
 app:
-  image: sdelements/lets-chat:latest
+  image: egreen/edu-chat:latest
   links:
-    - mongo
+    - mongo:chatapp-mongo
   ports:
-    - 80:8080
+    - 5000:8080
     - 5222:5222
 
-mongo:
-  image: mongo:latest
