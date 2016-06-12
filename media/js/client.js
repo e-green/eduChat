@@ -552,6 +552,9 @@
         this.passwordModal = new window.LCB.RoomPasswordModalView({
             el: $('#lcb-password')
         });
+
+
+
         return this;
     };
     //

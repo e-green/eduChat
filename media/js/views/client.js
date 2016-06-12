@@ -82,6 +82,11 @@
             this.giphyModal = new window.LCB.GiphyModalView({
                 el: this.$el.find('#lcb-giphy')
             });
+
+            this.mathsModel=new window.LCB.MathsModalView({
+                el: this.$el.find('#lcb-maths'),
+                client: this.client
+            })
             //
             // Misc
             //

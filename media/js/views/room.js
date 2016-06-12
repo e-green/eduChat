@@ -5,7 +5,7 @@
 
 'use strict';
 
-+function(window, $, _) {
++function (window, $, _) {
 
     window.LCB = window.LCB || {};
 
@@ -23,7 +23,7 @@
             'click .lcb-room-poke': 'poke',
             'click .lcb-upload-trigger': 'upload'
         },
-        initialize: function(options) {
+        initialize: function (options) {
             this.client = options.client;
 
             var iAmOwner = this.model.get('owner') === this.client.user.id;
@@ -53,24 +53,30 @@
                 collection: this.model.files
             });
         },
-        render: function() {
+        render: function () {
             this.$el = $(this.template(_.extend(this.model.toJSON(), {
                 sidebar: store.get('sidebar')
             })));
             this.$messages = this.$('.lcb-messages');
             // Scroll Locking
             this.scrollLocked = true;
-            this.$messages.on('scroll',  _.bind(this.updateScrollLock, this));
+            this.$messages.on('scroll', _.bind(this.updateScrollLock, this));
             this.atwhoMentions();
             this.atwhoAllMentions();
             this.atwhoRooms();
             this.atwhoEmotes();
             this.selectizeParticipants();
+
         },
-        atwhoTplEval: function(tpl, map) {
+
+        showMathLatext: function () {
+            console.log("Start ",$(this.$el).find('.mathLatext'));
+        },
+
+        atwhoTplEval: function (tpl, map) {
             var error;
             try {
-                return tpl.replace(/\$\{([^\}]*)\}/g, function(tag, key, pos) {
+                return tpl.replace(/\$\{([^\}]*)\}/g, function (tag, key, pos) {
                     return (map[key] || '')
                         .replace(/&/g, '&amp;')
                         .replace(/"/g, '&quot;')
@@ -83,12 +89,12 @@
                 return "";
             }
         },
-        getAtwhoUserFilter: function(collection) {
+        getAtwhoUserFilter: function (collection) {
             var currentUser = this.client.user;
 
             return function filter(query, data, searchKey) {
                 var q = query.toLowerCase();
-                var results = collection.filter(function(user) {
+                var results = collection.filter(function (user) {
                     var attr = user.attributes;
 
                     if (user.id === currentUser.id) {
@@ -116,7 +122,7 @@
                     return false;
                 });
 
-                return results.map(function(user) {
+                return results.map(function (user) {
                     return user.attributes;
                 });
             };
@@ -124,10 +130,11 @@
         atwhoMentions: function () {
 
             function sorter(query, items, search_key) {
-                return items.sort(function(a, b) {
+                return items.sort(function (a, b) {
                     return a.atwho_order - b.atwho_order;
                 });
             }
+
             var options = {
                 at: '@',
                 tpl: '<li data-value="@${username}"><img src="https://www.gravatar.com/avatar/${avatar}?s=20" height="20" width="20" /> @${username} <small>${displayName}</small></li>',
@@ -150,7 +157,7 @@
             }
 
             function sorter(query, items, search_key) {
-                return items.sort(function(a, b) {
+                return items.sort(function (a, b) {
                     return a.atwho_order - b.atwho_order;
                 });
             }
@@ -167,7 +174,7 @@
 
             this.$('.lcb-entry-input').atwho(options);
 
-            var opts = _.extend(options, { at: '@'});
+            var opts = _.extend(options, {at: '@'});
             this.$('.lcb-entry-participants').atwho(opts);
             this.$('.lcb-room-participants').atwho(opts);
         },
@@ -177,20 +184,20 @@
             this.$('.lcb-entry-participants').selectize({
                 delimiter: ',',
                 create: false,
-                load: function(query, callback) {
+                load: function (query, callback) {
                     if (!query.length) return callback();
 
                     var users = that.client.getUsersSync();
 
-                    var usernames = users.map(function(user) {
+                    var usernames = users.map(function (user) {
                         return user.attributes.username;
                     });
 
-                    usernames = _.filter(usernames, function(username) {
+                    usernames = _.filter(usernames, function (username) {
                         return username.indexOf(query) !== -1;
                     });
 
-                    users = _.map(usernames, function(username) {
+                    users = _.map(usernames, function (username) {
                         return {
                             value: username,
                             text: username
@@ -201,17 +208,17 @@
                 }
             });
         },
-        atwhoRooms: function() {
+        atwhoRooms: function () {
             var rooms = this.client.rooms;
 
             function filter(query, data, searchKey) {
                 var q = query.toLowerCase();
-                var results = rooms.filter(function(room) {
+                var results = rooms.filter(function (room) {
                     var val = room.attributes.slug.toLowerCase();
                     return val.indexOf(q) > -1;
                 });
 
-                return results.map(function(room) {
+                return results.map(function (room) {
                     return room.attributes;
                 });
             }
@@ -227,28 +234,28 @@
                     tpl: '<li data-value="#${slug}">#${slug} <small>${name}</small></li>'
                 });
         },
-        atwhoEmotes: function() {
+        atwhoEmotes: function () {
             var that = this;
-            this.client.getEmotes(function(emotes) {
+            this.client.getEmotes(function (emotes) {
                 that.$('.lcb-entry-input')
-                .atwho({
-                    at: ':',
-                    search_key: 'emote',
-                    data: emotes,
-                    tpl: '<li data-value=":${emote}:"><img src="${image}" height="32" width="32" alt=":${emote}:" /> :${emote}:</li>'
-                });
+                    .atwho({
+                        at: ':',
+                        search_key: 'emote',
+                        data: emotes,
+                        tpl: '<li data-value=":${emote}:"><img src="${image}" height="32" width="32" alt=":${emote}:" /> :${emote}:</li>'
+                    });
             });
         },
-        goodbye: function() {
+        goodbye: function () {
             swal('Archived!', '"' + this.model.get('name') + '" has been archived.', 'warning');
         },
-        updateMeta: function() {
+        updateMeta: function () {
             this.$('.lcb-room-heading .name').text(this.model.get('name'));
             this.$('.lcb-room-heading .slug').text('#' + this.model.get('slug'));
             this.$('.lcb-room-description').text(this.model.get('description'));
             this.$('.lcb-room-participants').text(this.model.get('participants'));
         },
-        sendMeta: function(e) {
+        sendMeta: function (e) {
             this.model.set({
                 name: this.$('.lcb-room-heading').text(),
                 description: this.$('.lcb-room-description').text(),
@@ -261,7 +268,7 @@
                 participants: this.model.get('participants')
             });
         },
-        showEditRoom: function(e) {
+        showEditRoom: function (e) {
             if (e) {
                 e.preventDefault();
             }
@@ -279,13 +286,13 @@
 
             $modal.modal();
         },
-        hideEditRoom: function(e) {
+        hideEditRoom: function (e) {
             if (e) {
                 e.preventDefault();
             }
             this.$('.lcb-room-edit').modal('hide');
         },
-        submitEditRoom: function(e) {
+        submitEditRoom: function (e) {
             if (e) {
                 e.preventDefault();
             }
@@ -321,11 +328,11 @@
 
             $modal.modal('hide');
         },
-        archiveRoom: function(e) {
+        archiveRoom: function (e) {
             var that = this;
             swal({
                 title: 'Do you really want to archive "' +
-                       this.model.get('name') + '"?',
+                this.model.get('name') + '"?',
                 text: "You will not be able to open it!",
                 type: "error",
                 confirmButtonText: "Yes, I'm sure",
@@ -333,7 +340,7 @@
                 confirmButtonColor: "#DD6B55",
                 showCancelButton: true,
                 closeOnConfirm: true,
-            }, function(isConfirm) {
+            }, function (isConfirm) {
                 if (isConfirm) {
                     that.$('.lcb-room-edit').modal('hide');
                     that.client.events.trigger('rooms:archive', {
@@ -342,7 +349,7 @@
                 }
             });
         },
-        sendMessage: function(e) {
+        sendMessage: function (e) {
             if (e.type === 'keypress' && e.keyCode !== 13 || e.altKey) return;
             if (e.type === 'keypress' && e.keyCode === 13 && e.shiftKey) return;
             e.preventDefault();
@@ -357,7 +364,7 @@
             this.scrollLocked = true;
             this.scrollMessages();
         },
-        addMessage: function(message) {
+        addMessage: function (message) {
             // Smells like pasta
             message.paste = /\n/i.test(message.text);
 
@@ -365,7 +372,7 @@
 
             // Fragment or new message?
             message.fragment = this.lastMessageOwner === message.owner.id &&
-                            posted.diff(this.lastMessagePosted, 'minutes') < 2;
+                posted.diff(this.lastMessagePosted, 'minutes') < 2;
 
             // Mine? Mine? Mine? Mine?
             message.own = this.client.user.id === message.owner.id;
@@ -378,7 +385,7 @@
             var $text = $html.find('.lcb-message-text');
 
             var that = this;
-            this.formatMessage($text.html(), function(text) {
+            this.formatMessage($text.html(), function (text) {
                 $text.html(text);
                 $html.find('time').updateTimeStamp();
                 that.$messages.append($html);
@@ -392,10 +399,10 @@
             });
 
         },
-        formatMessage: function(text, cb) {
+        formatMessage: function (text, cb) {
             var client = this.client;
-            client.getEmotes(function(emotes) {
-                client.getReplacements(function(replacements) {
+            client.getEmotes(function (emotes) {
+                client.getReplacements(function (replacements) {
                     var data = {
                         emotes: emotes,
                         replacements: replacements,
@@ -403,22 +410,25 @@
                     };
 
                     var msg = window.utils.message.format(text, data);
+
                     cb(msg);
                 });
             });
+
+
         },
-        updateScrollLock: function() {
+        updateScrollLock: function () {
             this.scrollLocked = this.$messages[0].scrollHeight -
-              this.$messages.scrollTop() - 5 <= this.$messages.outerHeight();
+                this.$messages.scrollTop() - 5 <= this.$messages.outerHeight();
             return this.scrollLocked;
         },
-        scrollMessages: function(force) {
+        scrollMessages: function (force) {
             if ((!force && !this.scrollLocked) || this.$el.hasClass('hide')) {
                 return;
             }
             this.$messages[0].scrollTop = this.$messages[0].scrollHeight;
         },
-        toggleSidebar: function(e) {
+        toggleSidebar: function (e) {
             e && e.preventDefault && e.preventDefault();
             // Target siblings too!
             this.$el.siblings('.lcb-room').andSelf().toggleClass('lcb-room-sidebar-opened');
@@ -426,16 +436,16 @@
             if ($(window).width() > 767) {
                 this.scrollMessages();
                 store.set('sidebar',
-                          this.$el.hasClass('lcb-room-sidebar-opened'));
+                    this.$el.hasClass('lcb-room-sidebar-opened'));
             }
         },
-        destroy: function() {
+        destroy: function () {
             this.undelegateEvents();
             this.$el.removeData().unbind();
             this.remove();
             Backbone.View.prototype.remove.call(this);
         },
-        poke: function(e) {
+        poke: function (e) {
             var $target = $(e.currentTarget),
                 $root = $target.closest('[data-id],[data-owner]'),
                 id = $root.data('owner') || $root.data('id'),
@@ -448,11 +458,11 @@
                 at = (text.length > 0 ? ' ' : '') + '@' + user.get('username') + ' '
             $input.val(text + at).focus();
         },
-        upload: function(e) {
+        upload: function (e) {
             e.preventDefault();
             this.model.trigger('upload:show', this.model);
         },
-        updateUser: function(user) {
+        updateUser: function (user) {
             var $messages = this.$('.lcb-message[data-owner="' + user.id + '"]');
             $messages.find('.lcb-message-username').text('@' + user.get('username'));
             $messages.find('.lcb-message-displayname').text(user.get('displayName'));
@@ -460,38 +470,38 @@
     });
 
     window.LCB.RoomSidebarListView = Backbone.View.extend({
-        initialize: function(options) {
+        initialize: function (options) {
             this.template = Handlebars.compile($(this.templateSelector).html());
-            this.collection.on('add remove', function() {
+            this.collection.on('add remove', function () {
                 this.count();
             }, this);
-            this.collection.on('add', function(model) {
+            this.collection.on('add', function (model) {
                 this.add(model.toJSON());
             }, this);
-            this.collection.on('change', function(model) {
+            this.collection.on('change', function (model) {
                 this.update(model.toJSON());
             }, this);
-            this.collection.on('remove', function(model) {
+            this.collection.on('remove', function (model) {
                 this.remove(model.id);
             }, this);
             this.render();
         },
-        render: function() {
-            this.collection.each(function(model) {
+        render: function () {
+            this.collection.each(function (model) {
                 this.add(model.toJSON());
             }, this);
             this.count();
         },
-        add: function(model) {
+        add: function (model) {
             this.$('.lcb-room-sidebar-list').prepend(this.template(model));
         },
-        remove: function(id) {
+        remove: function (id) {
             this.$('.lcb-room-sidebar-item[data-id=' + id + ']').remove();
         },
-        count: function(models) {
+        count: function (models) {
             this.$('.lcb-room-sidebar-items-count').text(this.collection.length);
         },
-        update: function(model){
+        update: function (model) {
             this.$('.lcb-room-sidebar-item[data-id=' + model.id + ']')
                 .replaceWith(this.template(model));
         }

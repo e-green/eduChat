@@ -4,37 +4,37 @@
 
 'use strict';
 
-+function(window, $, _) {
++function (window, $, _) {
 
     window.LCB = window.LCB || {};
 
     window.LCB.ModalView = Backbone.View.extend({
         events: {
-        	'submit form': 'submit'
+            'submit form': 'submit'
         },
-        initialize: function(options) {
+        initialize: function (options) {
             this.render();
         },
-        render: function() {
+        render: function () {
             this.$('form.validate').validate();
             this.$el.on('shown.bs.modal hidden.bs.modal',
-                        _.bind(this.refresh, this));
+                _.bind(this.refresh, this));
         },
-        refresh: function() {
+        refresh: function () {
             var that = this;
-            this.$('[data-model]').each(function() {
+            this.$('[data-model]').each(function () {
                 $(this).val && $(this).val(that.model.get($(this).data('model')));
             });
         },
-        success: function() {
+        success: function () {
             swal('Updated!', '', 'success');
             this.$el.modal('hide');
         },
-        error: function() {
+        error: function () {
             swal('Woops!', '', 'error');
         },
-        submit: function(e) {
-        	e && e.preventDefault();
+        submit: function (e) {
+            e && e.preventDefault();
 
             var $form = this.$('form[action]');
             var opts = {
@@ -59,29 +59,29 @@
     });
 
     window.LCB.ProfileModalView = window.LCB.ModalView.extend({
-        success: function() {
+        success: function () {
             swal('Profile Updated!', 'Your profile has been updated.',
-                 'success');
+                'success');
             this.$el.modal('hide');
         },
-        error: function() {
+        error: function () {
             swal('Woops!', 'Your profile was not updated.', 'error');
         }
     });
 
     window.LCB.AccountModalView = window.LCB.ModalView.extend({
-        success: function() {
+        success: function () {
             swal('Account Updated!', 'Your account has been updated.', 'success');
             this.$el.modal('hide');
             this.$('[type="password"]').val('');
         },
-        error: function(req) {
+        error: function (req) {
             var message = req.responseJSON && req.responseJSON.reason ||
-                          'Your account was not updated.';
+                'Your account was not updated.';
 
             swal('Woops!', message, 'error');
         },
-        complete: function() {
+        complete: function () {
             this.$('[name="current-password"]').val('');
         }
     });
@@ -90,76 +90,114 @@
         events: {
             'click .btn-primary': 'enterRoom'
         },
-        initialize: function(options) {
+        initialize: function (options) {
             this.render();
             this.$name = this.$('.lcb-room-password-name');
             this.$password = this.$('input.lcb-room-password-required');
         },
-        render: function() {
+        render: function () {
             // this.$el.on('shown.bs.modal hidden.bs.modal',
             //             _.bind(this.refresh, this));
         },
-        show: function(options) {
+        show: function (options) {
             this.callback = options.callback;
             this.$password.val('');
             this.$name.text(options.roomName || '');
             this.$el.modal('show');
         },
-        enterRoom: function() {
+        enterRoom: function () {
             this.$el.modal('hide');
             this.callback(this.$password.val());
         }
     });
+
+
+    window.LCB.MathsModalView = Backbone.View.extend({
+        events: {
+            'click .btn-primary': 'postMaths'
+        },
+        initialize: function (options) {
+            this.client = options.client;
+            this.room = this.client.rooms.current;
+            //
+
+            this.render();
+            this.$message = this.$('#latex');
+            console.log(this.client)
+        },
+        render: function () {
+            // this.$el.on('shown.bs.modal hidden.bs.modal',
+            //             _.bind(this.refresh, this));
+        },
+        show: function (options) {
+            this.callback = options.callback;
+            this.$password.val('');
+            this.$name.text(options.roomName || '');
+            this.$el.modal('show');
+        },
+        postMaths: function () {
+            this.client.events.trigger('messages:send', {
+                room: this.room.id,
+                text: "maths://"+this.$message.val()
+            });
+        }
+
+
+    });
+
 
     window.LCB.AuthTokensModalView = Backbone.View.extend({
         events: {
             'click .generate-token': 'generateToken',
             'click .revoke-token': 'revokeToken'
         },
-        initialize: function(options) {
+        initialize: function (options) {
             this.render();
         },
-        render: function() {
+        render: function () {
             this.$el.on('shown.bs.modal hidden.bs.modal',
-                        _.bind(this.refresh, this));
+                _.bind(this.refresh, this));
         },
-        refresh: function() {
+        refresh: function () {
             this.$('.token').val('');
             this.$('.generated-token').hide();
         },
-        getToken: function() {
+        getToken: function () {
             var that = this;
-            $.post('./account/token/generate', function(data) {
+            $.post('./account/token/generate', function (data) {
                 if (data.token) {
                     that.$('.token').val(data.token);
                     that.$('.generated-token').show();
                 }
             });
         },
-        removeToken: function() {
+        removeToken: function () {
             var that = this;
-            $.post('./account/token/revoke', function(data) {
+            $.post('./account/token/revoke', function (data) {
                 that.refresh();
                 swal('Success', 'Authentication token revoked!', 'success');
             });
         },
-        generateToken: function() {
+        generateToken: function () {
             swal({
-                title: 'Are you sure?',
-                text: 'This will overwrite any existing authentication token you may have.',   type: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes',
-                closeOnConfirm: true },
+                    title: 'Are you sure?',
+                    text: 'This will overwrite any existing authentication token you may have.', type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes',
+                    closeOnConfirm: true
+                },
                 _.bind(this.getToken, this)
             );
         },
-        revokeToken: function() {
+        revokeToken: function () {
             swal({
-                title: 'Are you sure?',
-                text: 'This will revoke access from any process using your current authentication token.',   type: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes',
-                closeOnConfirm: false },
+                    title: 'Are you sure?',
+                    text: 'This will revoke access from any process using your current authentication token.',
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes',
+                    closeOnConfirm: false
+                },
                 _.bind(this.removeToken, this)
             );
         }
@@ -169,13 +207,13 @@
         events: {
             'click [name=desktop-notifications]': 'toggleDesktopNotifications'
         },
-        initialize: function() {
+        initialize: function () {
             this.render();
         },
-        render: function() {
+        render: function () {
             var $input = this.$('[name=desktop-notifications]');
             $input.find('.disabled').show()
-              .siblings().hide();
+                .siblings().hide();
             if (!notify.isSupported) {
                 $input.attr('disabled', true);
                 // Welp we're done here
@@ -183,19 +221,19 @@
             }
             if (notify.permissionLevel() === notify.PERMISSION_GRANTED) {
                 $input.find('.enabled').show()
-                  .siblings().hide();
+                    .siblings().hide();
             }
             if (notify.permissionLevel() === notify.PERMISSION_DENIED) {
                 $input.find('.blocked').show()
-                  .siblings().hide();
+                    .siblings().hide();
             }
         },
-        toggleDesktopNotifications: function() {
+        toggleDesktopNotifications: function () {
             var that = this;
             if (!notify.isSupported) {
                 return;
             }
-            notify.requestPermission(function() {
+            notify.requestPermission(function () {
                 that.render();
             });
         }
@@ -206,23 +244,23 @@
             'keypress .search-giphy': 'stopReturn',
             'keyup .search-giphy': 'loadGifs'
         },
-        initialize: function(options) {
+        initialize: function (options) {
             this.render();
         },
-        render: function() {
+        render: function () {
             this.$el.on('shown.bs.modal hidden.bs.modal',
-                        _.bind(this.refresh, this));
+                _.bind(this.refresh, this));
         },
-        refresh: function() {
+        refresh: function () {
             this.$el.find('.giphy-results ul').empty();
             this.$('.search-giphy').val('').focus();
         },
-        stopReturn: function(e) {
-            if(e.keyCode === 13) {
+        stopReturn: function (e) {
+            if (e.keyCode === 13) {
                 return false;
             }
         },
-        loadGifs: _.debounce(function() {
+        loadGifs: _.debounce(function () {
             var that = this;
             var search = this.$el.find('.search-giphy').val();
 
@@ -232,23 +270,23 @@
                 limit: this.$el.data('limit'),
                 api_key: this.$el.data('apikey')
             })
-            .done(function(result) {
-                var images = result.data.filter(function(entry) {
-                    return entry.images.fixed_width.url;
-                }).map(function(entry) {
-                    return entry.images.fixed_width.url;
-                });
+                .done(function (result) {
+                    var images = result.data.filter(function (entry) {
+                        return entry.images.fixed_width.url;
+                    }).map(function (entry) {
+                        return entry.images.fixed_width.url;
+                    });
 
-                that.appendGifs(images);
-            });
+                    that.appendGifs(images);
+                });
         }, 400),
-        appendGifs: function(images) {
-            var eles = images.map(function(url) {
+        appendGifs: function (images) {
+            var eles = images.map(function (url) {
                 var that = this;
                 var $img = $('<img src="' + url +
-                       '" alt="gif" data-dismiss="modal"/></li>');
+                    '" alt="gif" data-dismiss="modal"/></li>');
 
-                $img.click(function() {
+                $img.click(function () {
                     var src = $(this).attr('src');
                     $('.lcb-entry-input:visible').val(src);
                     $('.lcb-entry-button:visible').click();
@@ -262,7 +300,7 @@
 
             $div.empty();
 
-            eles.forEach(function($ele) {
+            eles.forEach(function ($ele) {
                 $div.append($ele);
             });
         }
